@@ -1,0 +1,34 @@
+{
+  "name": "lob-enc",
+  "version": "0.0.1",
+  "description": "Length-Object-Binary Packet Encoding",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+  },
+  "scripts": {
+      "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quartzjer/lob-enc.git"
+  },
+  "keywords": [
+    "lob encoding",
+    "packet",
+    "json",
+    "binary"
+  ],
+  "author": {
+    "name": "Jeremie Miller",
+    "email": "jeremie@jabber.org",
+    "url": "http://jeremie.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/quartzjer/lob-enc/issues"
+  },
+  "homepage": "https://github.com/quartzjer/lob-enc"
+}
