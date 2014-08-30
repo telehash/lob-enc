@@ -1,7 +1,11 @@
 // encode a packet
-exports.encode = function(json, body)
+exports.encode = function(head, body)
 {
-  var head = (typeof json == "number") ? new Buffer(String.fromCharCode(json)) : new Buffer(json?JSON.stringify(json):"", "utf8");
+  // support different arg types
+  if(head === null) head = false; // grrrr
+  if(typeof head == 'number') head = new Buffer(String.fromCharCode(json));
+  if(typeof head == 'object' && !Buffer.isBuffer(head)) head = new Buffer(JSON.stringify(head));
+  head = head || new Buffer(0);
   if(typeof body == "string") body = new Buffer(body, "binary");
   body = body || new Buffer(0);
   var len = new Buffer(2);
@@ -32,5 +36,5 @@ exports.decode =function(bin)
       return undefined;
     }
   }
-  return {json:json, length:buf.length, head:head.toString("binary"), body:body};
+  return {json:json, length:buf.length, head:head, body:body};
 }

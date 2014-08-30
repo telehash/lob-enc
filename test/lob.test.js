@@ -23,5 +23,27 @@ describe('hashname', function(){
     expect(packet.body.length).to.be.equal(11);
   });
 
+  it('should handle no head', function(){
+    var body = new Buffer("any binary!");
+    var bin = lob.encode(null, body);
+    expect(Buffer.isBuffer(bin)).to.be.equal(true);
+    expect(bin.length).to.be.equal(13);
+    var packet = lob.decode(bin);
+    expect(packet.head.length).to.be.equal(0);
+    expect(packet.body.toString()).to.be.equal("any binary!");
+  });
+
+  it('should handle bin head', function(){
+    var head = new Buffer("42","hex");
+    var body = new Buffer("any binary!");
+    var bin = lob.encode(head, body);
+    expect(Buffer.isBuffer(bin)).to.be.equal(true);
+    expect(bin.length).to.be.equal(14);
+    var packet = lob.decode(bin);
+    expect(packet.head.length).to.be.equal(1);
+    expect(packet.head.toString("hex")).to.be.equal("42");
+    expect(packet.body.toString()).to.be.equal("any binary!");
+  });
+
 
 })
