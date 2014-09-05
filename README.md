@@ -18,4 +18,6 @@ var bin = lob.encode(json, body));
 
 var packet = lob.decode(bin);
 // packet.json == json, and packet.body == body
+
+var bool = lob.isPacket(packet); // object validator
 ```

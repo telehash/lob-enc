@@ -38,3 +38,13 @@ exports.decode =function(bin)
   }
   return {json:json, length:buf.length, head:head, body:body};
 }
+
+exports.isPacket = function(packet)
+{
+  if(typeof packet != 'object') return false;
+  if(typeof packet.json != 'object') return false;
+  if(typeof packet.length != 'number') return false;
+  if(!Buffer.isBuffer(packet.head)) return false;
+  if(!Buffer.isBuffer(packet.body)) return false;
+  return true;
+}
