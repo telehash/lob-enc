@@ -19,5 +19,9 @@ var bin = lob.encode(json, body));
 var packet = lob.decode(bin);
 // packet.json == json, and packet.body == body
 
-var bool = lob.isPacket(packet); // object validator
+// do both encode and decode together, for convenience
+var packet = lob.packet(json, body);
+
+// object validator
+var bool = lob.isPacket(packet);
 ```

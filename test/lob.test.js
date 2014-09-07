@@ -55,4 +55,10 @@ describe('hashname', function(){
     expect(lob.isPacket({json:{},length:0,head:new Buffer(0),body:""})).to.be.false;
   });
 
+  it('should packet', function(){
+    var packet = lob.packet({a:0},new Buffer(2));
+    expect(lob.isPacket(packet)).to.be.true;
+    expect(packet.length).to.be.equal(11);
+  });
+
 })

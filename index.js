@@ -39,6 +39,12 @@ exports.decode =function(bin)
   return {json:json, length:buf.length, head:head, body:body};
 }
 
+// convenience to create a valid packet object
+exports.packet = function(head, body)
+{
+  return exports.decode(exports.encode(head, body));
+}
+
 exports.isPacket = function(packet)
 {
   if(typeof packet != 'object') return false;
