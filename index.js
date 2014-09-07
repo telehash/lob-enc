@@ -13,7 +13,7 @@ exports.encode = function(head, body)
   return Buffer.concat([len, head, body]);
 }
 
-// packet decoding
+// packet decoding, add values to a buffer return
 exports.decode =function(bin)
 {
   if(!bin) return undefined;
@@ -23,20 +23,20 @@ exports.decode =function(bin)
   // read and validate the json length
   var len = buf.readUInt16BE(0);
   if(len > (buf.length - 2)) return undefined;
-  var head = buf.slice(2, len+2);
-  var body = buf.slice(len + 2);
+  buf.head = buf.slice(2, len+2);
+  buf.body = buf.slice(len + 2);
 
   // parse out the json
-  var json = {};
+  buf.json = {};
   if(len >= 7)
   {
     try {
-      json = JSON.parse(head.toString("utf8"));
+      buf.json = JSON.parse(buf.head.toString("utf8"));
     } catch(E) {
       return undefined;
     }
   }
-  return {json:json, length:buf.length, head:head, body:body};
+  return buf;
 }
 
 // convenience to create a valid packet object
@@ -47,9 +47,9 @@ exports.packet = function(head, body)
 
 exports.isPacket = function(packet)
 {
-  if(typeof packet != 'object') return false;
+  if(!Buffer.isBuffer(packet)) return false;
+  if(packet.length < 2) return false;
   if(typeof packet.json != 'object') return false;
-  if(typeof packet.length != 'number') return false;
   if(!Buffer.isBuffer(packet.head)) return false;
   if(!Buffer.isBuffer(packet.body)) return false;
   return true;

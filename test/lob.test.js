@@ -50,9 +50,13 @@ describe('hashname', function(){
     var packet = lob.decode(bin);
     expect(lob.isPacket(packet)).to.be.true;
     expect(lob.isPacket({})).to.be.false;
-    expect(lob.isPacket({json:{},length:0,head:new Buffer(0),body:new Buffer(0)})).to.be.true;
-    expect(lob.isPacket({json:{},head:new Buffer(0),body:new Buffer(0)})).to.be.false;
-    expect(lob.isPacket({json:{},length:0,head:new Buffer(0),body:""})).to.be.false;
+    expect(lob.isPacket(new Buffer(0))).to.be.false;
+    var pkt = new Buffer(2);
+    pkt.head = pkt.body = new Buffer(0);
+    pkt.json = {};
+    expect(lob.isPacket(pkt)).to.be.true;
+    delete pkt.json;
+    expect(lob.isPacket(pkt)).to.be.false;
   });
 
   it('should packet', function(){
