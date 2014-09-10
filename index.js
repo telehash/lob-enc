@@ -7,10 +7,10 @@ exports.encode = function(head, body)
   if(typeof head == 'object')
   {
     // accept a packet as the first arg
-    if(typeof head.json == 'object' && Buffer.isBuffer(head.body) && body === undefined)
+    if(Buffer.isBuffer(head.body) && body === undefined)
     {
       body = head.body;
-      head = head.json;
+      head = head.head || head.json;
     }
     // serialize raw json
     if(!Buffer.isBuffer(head))
