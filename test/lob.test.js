@@ -23,6 +23,15 @@ describe('hashname', function(){
     expect(packet.body.length).to.be.equal(11);
   });
 
+  it('should transpose', function(){
+    var hex = '001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921';
+    var bin = new Buffer(hex,'hex');
+    var packet = lob.decode(bin);
+    bin = lob.encode(packet);
+    expect(bin).to.be.a('object');
+    expect(bin.toString('hex')).to.be.equal(hex);
+  });
+
   it('should handle no head', function(){
     var body = new Buffer("any binary!");
     var bin = lob.encode(null, body);
@@ -31,6 +40,11 @@ describe('hashname', function(){
     var packet = lob.decode(bin);
     expect(packet.head.length).to.be.equal(0);
     expect(packet.body.toString()).to.be.equal("any binary!");
+  });
+
+  it('should handle empty head', function(){
+    var bin = lob.encode({});
+    expect(bin.length).to.be.equal(2);
   });
 
   it('should handle bin head', function(){

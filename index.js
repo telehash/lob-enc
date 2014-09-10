@@ -4,9 +4,24 @@ exports.encode = function(head, body)
   // support different arg types
   if(head === null) head = false; // grrrr
   if(typeof head == 'number') head = new Buffer(String.fromCharCode(json));
-  if(typeof head == 'object' && !Buffer.isBuffer(head)) head = new Buffer(JSON.stringify(head));
+  if(typeof head == 'object')
+  {
+    // accept a packet as the first arg
+    if(typeof head.json == 'object' && Buffer.isBuffer(head.body) && body === undefined)
+    {
+      body = head.body;
+      head = head.json;
+    }
+    // serialize raw json
+    if(!Buffer.isBuffer(head))
+    {
+      head = new Buffer(JSON.stringify(head));
+      // require real json object
+      if(head.length < 7) head = false;
+    }
+  }
   head = head || new Buffer(0);
-  if(typeof body == "string") body = new Buffer(body, "binary");
+  if(typeof body == 'string') body = new Buffer(body, 'binary');
   body = body || new Buffer(0);
   var len = new Buffer(2);
   len.writeInt16BE(head.length, 0);
@@ -17,7 +32,7 @@ exports.encode = function(head, body)
 exports.decode =function(bin)
 {
   if(!bin) return undefined;
-  var buf = (typeof bin == "string") ? new Buffer(bin, "binary") : bin;
+  var buf = (typeof bin == 'string') ? new Buffer(bin, 'binary') : bin;
   if(bin.length < 2) return undefined;
 
   // read and validate the json length
@@ -31,7 +46,7 @@ exports.decode =function(bin)
   if(len >= 7)
   {
     try {
-      buf.json = JSON.parse(buf.head.toString("utf8"));
+      buf.json = JSON.parse(buf.head.toString('utf8'));
     } catch(E) {
       return undefined;
     }
