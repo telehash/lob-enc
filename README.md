@@ -25,3 +25,22 @@ var packet = lob.packet(json, body);
 // object validator
 var bool = lob.isPacket(packet);
 ```
+
+Also supports reading a packet in a streaming mode:
+
+````js
+var stream = lob.stream(function(packet, cbDone){
+  // packet.json is the complete header
+  // any packet.body will be subsequently streamed
+  cbDone();
+});
+
+var es = require('event-stream');
+stream.pipe(es.wait(function(err, body){
+  // body is the body of the packet
+}));
+
+// test stream in chunks
+var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
+es.readArray([bin.slice(0,10),bin.slice(10,20),bin.slice(20,30),bin.slice(30)]).pipe(stream);
+````

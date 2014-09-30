@@ -1,11 +1,12 @@
 {
   "name": "lob-enc",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Length-Object-Binary Packet Encoding",
   "dependencies": {
   },
   "devDependencies": {
     "chai": "*",
+    "event-stream": "~3.1.7",
     "mocha": "*"
   },
   "scripts": {

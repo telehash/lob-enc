@@ -69,3 +69,31 @@ exports.isPacket = function(packet)
   if(!Buffer.isBuffer(packet.body)) return false;
   return true;
 }
+
+// read a bytestream for a packet, decode the header and pass body through
+var Transform = require('stream').Transform;
+exports.stream = function(cbHead){
+  var stream = new Transform();
+  var buf = new Buffer(0);
+  stream._transform = function(data,enc,cbTransform)
+  {
+    // no buffer means pass everything through
+    if(!buf)
+    {
+      stream.push(data);
+      return cbTransform();
+    }
+    // gather until full header
+    buf = Buffer.concat([buf,data]);
+    var packet = exports.decode(buf);
+    if(!packet) return cbTransform();
+    buf = false; // pass through all future data
+    // give to the app
+    cbHead(packet, function(err){
+      if(err) return cbTransform(err);
+      stream.push(packet.body);
+      cbTransform();
+    });
+  }
+  return stream;
+}

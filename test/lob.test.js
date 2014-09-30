@@ -1,4 +1,5 @@
 var expect = require('chai').expect;
+var es = require('event-stream');
 var lob = require('../index.js');
 
 
@@ -77,6 +78,36 @@ describe('hashname', function(){
     var packet = lob.packet({a:0},new Buffer(2));
     expect(lob.isPacket(packet)).to.be.true;
     expect(packet.length).to.be.equal(11);
+  });
+
+  it('should bulk stream', function(done){
+    var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
+    var stream = lob.stream(function(packet, cb){
+      expect(lob.isPacket(packet)).to.be.true;
+      expect(cb).to.be.a('function');
+      expect(packet.head.length).to.be.equal(29);
+      done();
+    });
+    stream.pipe(es.wait(function(err, body){
+      expect(err).to.not.exist;
+      expect(body.length).to.be.equal(11);
+    }));
+    stream.write(bin);
+  });
+
+  it('should chunk stream', function(done){
+    var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
+    var stream = lob.stream(function(packet, cb){
+      expect(lob.isPacket(packet)).to.be.true;
+      expect(cb).to.be.a('function');
+      expect(packet.head.length).to.be.equal(29);
+      done();
+    });
+    stream.pipe(es.wait(function(err, body){
+      expect(err).to.not.exist;
+      expect(body.length).to.be.equal(11);
+    }));
+    es.readArray([bin.slice(0,10),bin.slice(10,20),bin.slice(20,30),bin.slice(30)]).pipe(stream);
   });
 
 })
