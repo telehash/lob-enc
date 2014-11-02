@@ -1,6 +1,6 @@
 {
   "name": "lob-enc",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Length-Object-Binary Packet Encoding",
   "dependencies": {
   },
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/quartzjer/lob-enc.git"
+    "url": "https://github.com/telehash/lob-enc.git"
   },
   "keywords": [
     "lob encoding",
@@ -29,7 +29,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/quartzjer/lob-enc/issues"
+    "url": "https://github.com/telehash/lob-enc/issues"
   },
-  "homepage": "https://github.com/quartzjer/lob-enc"
+  "homepage": "https://github.com/telehash/lob-enc"
 }
