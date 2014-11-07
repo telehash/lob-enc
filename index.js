@@ -102,7 +102,7 @@ exports.stream = function(cbHead){
 var Duplex = require('stream').Duplex;
 exports.chunking = function(args, cbPacket){
   if(!args) args = {};
-  if(!args.size) args.size = 256; // 1 to 256 bytes
+  if(!args.size || args.size > 255) args.size = 255; // 1 to 255 bytes
   if(!args.ack) args.ack = "none"; // "chunk" or "packet"
   if(!cbPacket) cbPacket = function(err, packet){ };
 
@@ -140,6 +140,7 @@ exports.chunking = function(args, cbPacket){
       data = data.slice(len+1);
       if(args.ack == "chunk") stream.push(new Buffer("\0")); // send per-chunk ack
     }
+    cbWrite();
   }
 
   // accept packets to be chunked

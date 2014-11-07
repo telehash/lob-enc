@@ -123,4 +123,34 @@ describe('hashname', function(){
     stream1.send(bin);
   });
 
+  it('should chunk bidi', function(done){
+    var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
+    var stream2 = lob.chunking({}, function(err, packet){
+      expect(lob.isPacket(packet)).to.be.true;
+      expect(packet.head.length).to.be.equal(29);
+      stream2.send(packet); // bounce back
+    });
+    var stream1 = lob.chunking({}, function(err, packet){
+      expect(lob.isPacket(packet)).to.be.true;
+      expect(packet.head.length).to.be.equal(29);
+      done();
+    });
+    stream1.pipe(stream2);
+    stream2.pipe(stream1);
+    stream1.send(bin);
+  });
+
+  it('should chunk stream w/ acks', function(done){
+    var bin = lob.encode({foo:true},require('crypto').randomBytes(1000));
+    var stream2 = lob.chunking({ack:"chunk"}, function(err, packet){
+      expect(lob.isPacket(packet)).to.be.true;
+      expect(packet.body.length).to.be.equal(1000);
+      done();
+    });
+    var stream1 = lob.chunking({});
+    stream1.pipe(stream2);
+    stream2.pipe(stream1);
+    stream1.send(bin);
+  });
+
 })
