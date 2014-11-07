@@ -97,3 +97,84 @@ exports.stream = function(cbHead){
   }
   return stream;
 }
+
+// chunking stream
+var Duplex = require('stream').Duplex;
+exports.chunking = function(args, cbPacket){
+  if(!args) args = {};
+  if(!args.size) args.size = 256; // 1 to 256 bytes
+  if(!args.ack) args.ack = "none"; // "chunk" or "packet"
+  if(!cbPacket) cbPacket = function(err, packet){ };
+
+  var stream = new Duplex({allowHalfOpen:false});
+  
+  // incoming chunked data coming from another stream
+  var chunks = new Buffer(0);
+  var data = new Buffer(0);
+  stream._write = function(data2,enc,cbWrite)
+  {
+    data = Buffer.concat([data,data2]);
+    while(data.length)
+    {
+      var len = data.readUInt8(0);
+      // packet done
+      if(len === 0)
+      {
+        if(chunks.length)
+        {
+          var packet = exports.decode(chunks);
+          chunks = new Buffer(0);
+          if(packet) cbPacket(false, packet);
+          if(args.ack == "packet") stream.push(new Buffer("\0")); // send per-chunk ack
+        }else{
+          // an extra 0 alone is an ack, clear acking state
+          acking = false;
+        }
+        data = data.slice(1);
+        continue;
+      }
+      // not a full chunk yet, wait for more
+      if(data.length < (len+1)) break;
+      // buffer up some more chunk data
+      chunks = Buffer.concat([chunks,data.slice(1,len+1)]);
+      data = data.slice(len+1);
+      if(args.ack == "chunk") stream.push(new Buffer("\0")); // send per-chunk ack
+    }
+  }
+
+  // accept packets to be chunked
+  var queue = [];
+  var buf = new Buffer(0);
+  var acking = false;
+  stream.send = function(packet)
+  {
+    if(packet) queue.push(packet);
+    // pull next packet to be chunked off the queue
+    if(buf.length == 0 && queue.length && acking != "packet")
+    {
+      buf = queue.shift();
+      if(args.ack == "packet") acking = args.ack;
+    }
+    // if any chunks need to be sent, do that
+    if(buf.length && acking != "chunk")
+    {
+      var len = new Buffer(1);
+      var chunk = buf.slice(0,args.size);
+      buf = buf.slice(chunk.length);
+      len.writeUInt8(chunk.length,0);
+      // check if we need to include the packet terminating zero
+      var zero = (buf.length) ? (new Buffer(0)) : (new Buffer("\0"));
+      if(args.ack == "chunk") acking = args.ack;
+      if(stream.push(Buffer.concat([len,chunk,zero]))) stream.send(); // let the loop figure itself out
+    }
+  }
+
+  // try sending more chunks
+  stream._read = function(size)
+  {
+    stream.send();
+  }
+
+  return stream;
+}
+

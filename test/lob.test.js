@@ -80,7 +80,7 @@ describe('hashname', function(){
     expect(packet.length).to.be.equal(11);
   });
 
-  it('should bulk stream', function(done){
+  it('should stream', function(done){
     var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
     var stream = lob.stream(function(packet, cb){
       expect(lob.isPacket(packet)).to.be.true;
@@ -95,7 +95,7 @@ describe('hashname', function(){
     stream.write(bin);
   });
 
-  it('should chunk stream', function(done){
+  it('should stream assemble', function(done){
     var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
     var stream = lob.stream(function(packet, cb){
       expect(lob.isPacket(packet)).to.be.true;
@@ -108,6 +108,19 @@ describe('hashname', function(){
       expect(body.length).to.be.equal(11);
     }));
     es.readArray([bin.slice(0,10),bin.slice(10,20),bin.slice(20,30),bin.slice(30)]).pipe(stream);
+  });
+
+  it('should chunk stream', function(done){
+    var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
+    var stream2 = lob.chunking({}, function(err, packet){
+      expect(lob.isPacket(packet)).to.be.true;
+      expect(packet.head.length).to.be.equal(29);
+      done();
+    });
+    var stream1 = lob.chunking({});
+    stream1.pipe(stream2);
+    stream2.pipe(stream1);
+    stream1.send(bin);
   });
 
 })
