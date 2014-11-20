@@ -186,9 +186,15 @@ exports.chunking = function(args, cbPacket){
   return stream;
 }
 
+function keyize(key)
+{
+  if(Buffer.isBuffer(key) && key.length == 32) return key;
+  return crypto.createHash('sha256').update(key).digest();
+}
+
 exports.cloak = function(key, packet, rounds)
 {
-  if(!Buffer.isBuffer(key) || !Buffer.isBuffer(packet)) return undefined;
+  if(!keyize(key) || !Buffer.isBuffer(packet)) return undefined;
   if(!rounds) rounds = 1;
   var nonce = crypto.randomBytes(8);
   var cloaked = Buffer.concat([nonce, chacha20.encrypt(key, nonce, packet)]);
@@ -198,7 +204,7 @@ exports.cloak = function(key, packet, rounds)
 
 exports.decloak = function(key, cloaked, rounds)
 {
-  if(!Buffer.isBuffer(cloaked) || cloaked.length < 10) return undefined;
+  if(!keyize(key) || !Buffer.isBuffer(cloaked) || cloaked.length < 2) return undefined;
   if(!rounds) rounds = 0;
   if(cloaked[0] == 0)
   {
@@ -206,6 +212,7 @@ exports.decloak = function(key, cloaked, rounds)
     if(packet) packet.cloaked = rounds;
     return packet;
   }
+  if(cloaked.length < 10) return undefined; // must have cloak and a minimum packet
   rounds++;
   return exports.decloak(key, chacha20.decrypt(key, cloaked.slice(0,8), cloaked.slice(8)), rounds);
 }
