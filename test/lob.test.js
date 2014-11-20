@@ -1,5 +1,6 @@
 var expect = require('chai').expect;
 var es = require('event-stream');
+var crypto = require('crypto');
 var lob = require('../index.js');
 
 
@@ -151,6 +152,22 @@ describe('hashname', function(){
     stream1.pipe(stream2);
     stream2.pipe(stream1);
     stream1.send(bin);
+  });
+  
+  it('should cloak and decloak', function(){
+    var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
+    var key = crypto.randomBytes(32);
+    var packet = lob.decloak(key, bin);
+    expect(packet).to.be.a('object');
+    expect(packet.json.type).to.be.equal('test');
+    expect(packet.body.length).to.be.equal(11);
+    var cloaked = lob.cloak(key, packet);
+    expect(Buffer.isBuffer(cloaked)).to.be.true;
+    expect(cloaked.length).to.be.above(packet.length);
+    packet = lob.decloak(key, cloaked);
+    expect(packet).to.be.a('object');
+    expect(packet.json.type).to.be.equal('test');
+    expect(packet.body.length).to.be.equal(11);
   });
 
 })

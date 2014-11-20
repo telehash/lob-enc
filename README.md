@@ -26,7 +26,7 @@ var packet = lob.packet(json, body);
 var bool = lob.isPacket(packet);
 ```
 
-Also supports reading a packet in a streaming mode:
+Also supports reading a packet in a [streaming mode](https://github.com/telehash/telehash.org/blob/master/v3/channels/thtp.md#thtp-channel):
 
 ````js
 var stream = lob.stream(function(packet, cbDone){
@@ -45,7 +45,7 @@ var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b2262617222
 es.readArray([bin.slice(0,10),bin.slice(10,20),bin.slice(20,30),bin.slice(30)]).pipe(stream);
 ````
 
-Packets can be read and written in chunks:
+Packets can be read and written in [chunks](https://github.com/telehash/telehash.org/blob/master/v3/lob/chunking.md):
 
 ````js
 // args.ack = true will only send one chunk until another is read, blocking/acking
@@ -55,4 +55,12 @@ chunk.pipe(socket); // chunks are written to socket
 socket.pipe(chunk); // incoming socket data is read back as chunks
 
 chunk.send(packet); // send a packet as one or more chunks
+````
+
+Packets can be [cloaked](https://github.com/telehash/telehash.org/blob/master/v3/cloaking.md):
+
+````js
+var cloaked = lob.cloak(key, packet, rounds);
+var packet = lob.decloak(key, cloaked);
+// packet.cloaked = # of rounds
 ````

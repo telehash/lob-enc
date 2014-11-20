@@ -1,3 +1,6 @@
+var crypto = require('crypto');
+var chacha20 = require('chacha20');
+
 // encode a packet
 exports.encode = function(head, body)
 {
@@ -181,5 +184,29 @@ exports.chunking = function(args, cbPacket){
   }
 
   return stream;
+}
+
+exports.cloak = function(key, packet, rounds)
+{
+  if(!Buffer.isBuffer(key) || !Buffer.isBuffer(packet)) return undefined;
+  if(!rounds) rounds = 1;
+  var nonce = crypto.randomBytes(8);
+  var cloaked = Buffer.concat([nonce, chacha20.encrypt(key, nonce, packet)]);
+  rounds--;
+  return (rounds) ? exports.cloak(key, cloaked, rounds) : cloaked;
+}
+
+exports.decloak = function(key, cloaked, rounds)
+{
+  if(!Buffer.isBuffer(cloaked) || cloaked.length < 10) return undefined;
+  if(!rounds) rounds = 0;
+  if(cloaked[0] == 0)
+  {
+    var packet = exports.decode(cloaked);
+    if(packet) packet.cloaked = rounds;
+    return packet;
+  }
+  rounds++;
+  return exports.decloak(key, chacha20.decrypt(key, cloaked.slice(0,8), cloaked.slice(8)), rounds);
 }
 
