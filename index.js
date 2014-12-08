@@ -194,7 +194,7 @@ function keyize(key)
 
 exports.cloak = function(key, packet, rounds)
 {
-  if(!keyize(key) || !Buffer.isBuffer(packet)) return undefined;
+  if(!(key = keyize(key)) || !Buffer.isBuffer(packet)) return undefined;
   if(!rounds) rounds = 1;
   var nonce = crypto.randomBytes(8);
   var cloaked = Buffer.concat([nonce, chacha20.encrypt(key, nonce, packet)]);
@@ -204,7 +204,7 @@ exports.cloak = function(key, packet, rounds)
 
 exports.decloak = function(key, cloaked, rounds)
 {
-  if(!keyize(key) || !Buffer.isBuffer(cloaked) || cloaked.length < 2) return undefined;
+  if(!(key = keyize(key)) || !Buffer.isBuffer(cloaked) || cloaked.length < 2) return undefined;
   if(!rounds) rounds = 0;
   if(cloaked[0] == 0)
   {
