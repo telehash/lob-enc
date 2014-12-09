@@ -1,6 +1,6 @@
 {
   "name": "lob-enc",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Length-Object-Binary Packet Encoding",
   "dependencies": {
     "chacha20": "~0.1.2"
