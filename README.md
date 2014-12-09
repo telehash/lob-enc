@@ -60,7 +60,7 @@ chunk.send(packet); // send a packet as one or more chunks
 Packets can be [cloaked](https://github.com/telehash/telehash.org/blob/master/v3/cloaking.md):
 
 ````js
-var cloaked = lob.cloak(key, packet, rounds);
-var packet = lob.decloak(key, cloaked);
+var cloaked = lob.cloak(packet);
+var packet = lob.decloak(cloaked);
 // packet.cloaked = # of rounds
 ````

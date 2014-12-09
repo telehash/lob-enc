@@ -156,21 +156,20 @@ describe('hashname', function(){
   
   it('should cloak and decloak', function(){
     var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
-    var key = "telehash";
-    var packet = lob.decloak(key, bin);
+    var packet = lob.decloak(bin);
     expect(packet).to.be.a('object');
     expect(packet.json.type).to.be.equal('test');
     expect(packet.body.length).to.be.equal(11);
-    var cloaked = lob.cloak(key, packet);
+    var cloaked = lob.cloak(packet);
     expect(Buffer.isBuffer(cloaked)).to.be.true;
     expect(cloaked.length).to.be.above(packet.length);
     console.log("cloaked",cloaked.toString("hex"));
-    packet = lob.decloak(key, cloaked);
+    packet = lob.decloak(cloaked);
     expect(packet).to.be.a('object');
     expect(packet.json.type).to.be.equal('test');
     expect(packet.body.length).to.be.equal(11);
     // fixture from c
-    packet = lob.decloak(key, new Buffer("b8921a332948eedec882b3102aa9d6de8688d73a195b0cab64bbf61f5c6805df85e901c1fb774046f46a43ba5440a5cad24eb486","hex"));
+    packet = lob.decloak(new Buffer("b8921a332948eedec882b3102aa9d6de8688d73a195b0cab64bbf61f5c6805df85e901c1fb774046f46a43ba5440a5cad24eb486","hex"));
     expect(packet).to.be.a('object');
     expect(packet.json.test).to.be.equal('cloaked');
     expect(packet.body.length).to.be.equal(0);
