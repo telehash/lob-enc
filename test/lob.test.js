@@ -124,6 +124,15 @@ describe('hashname', function(){
     stream1.send(bin);
   });
 
+  it('should chunk error', function(done){
+    var bin = new Buffer('GET / HTTP/1.0');
+    var stream = lob.chunking({}, function(err, packet){
+      expect(err).to.be.equal("HTTP detected");
+      done();
+    });
+    stream.write(bin);
+  });
+
   it('should chunk bidi', function(done){
     var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b22626172225d7d616e792062696e61727921','hex');
     var stream2 = lob.chunking({}, function(err, packet){

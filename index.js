@@ -120,7 +120,7 @@ exports.chunking = function(args, cbPacket){
     // trigger an error when http is detected, but otherwise continue
     if(data.length == 0 && data2.slice(0,5).toString() == 'GET /')
     {
-      cbPacket("http detected");
+      cbPacket("HTTP detected",data2);
     }
     data = Buffer.concat([data,data2]);
     while(data.length)
