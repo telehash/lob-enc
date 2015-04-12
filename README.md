@@ -1,6 +1,6 @@
 # Length-Object-Binary (LOB) Packet Encoding (javascript)
 
-This module will encode and decode [LOB](https://github.com/telehash/telehash.org/tree/master/v3/lob) packets to/from JSON and Buffers.
+This module will encode and decode [LOB](https://github.com/telehash/telehash.org/tree/master/v3/lob.md) packets to/from JSON and Buffers.
 
 Install: `npm install lob-enc`
 
