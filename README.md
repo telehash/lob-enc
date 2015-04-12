@@ -45,7 +45,7 @@ var bin = new Buffer('001d7b2274797065223a2274657374222c22666f6f223a5b2262617222
 es.readArray([bin.slice(0,10),bin.slice(10,20),bin.slice(20,30),bin.slice(30)]).pipe(stream);
 ````
 
-Packets can be read and written in [chunks](https://github.com/telehash/telehash.org/blob/master/v3/lob/chunking.md):
+Packets can be read and written in [chunks](https://github.com/telehash/telehash.org/blob/master/v3/chunking.md):
 
 ````js
 // args.ack = true will only send one chunk until another is read, blocking/acking
@@ -57,7 +57,7 @@ socket.pipe(chunk); // incoming socket data is read back as chunks
 chunk.send(packet); // send a packet as one or more chunks
 ````
 
-Packets can be [cloaked](https://github.com/telehash/telehash.org/blob/master/v3/cloaking.md):
+Packets can be [cloaked](https://github.com/telehash/telehash.org/blob/master/v3/e3x/cloaking.md):
 
 ````js
 var cloaked = lob.cloak(packet);
