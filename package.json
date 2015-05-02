@@ -1,6 +1,6 @@
 {
   "name": "lob-enc",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Length-Object-Binary Packet Encoding",
   "dependencies": {
     "chacha20": "~0.1.2"
@@ -11,7 +11,7 @@
     "mocha": "*"
   },
   "scripts": {
-      "test": "make test"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
