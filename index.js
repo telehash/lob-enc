@@ -105,11 +105,17 @@ exports.stream = function(cbHead){
 var Duplex = require('stream').Duplex;
 exports.chunking = function(args, cbPacket){
   if(!args) args = {};
-  if(!args.size || args.size > 255) args.size = 255; // 1 to 255 bytes
   if(!cbPacket) cbPacket = function(err, packet){ };
 
+  // chunks can have space for 1 to 255 bytes
+  if(!args.size || args.size > 256) args.size = 256;
+  var space = args.size - 1;
+  if(space < 1) space = 1; // minimum
+  
+  var blocked = false;
+  if(args.blocking) args.ack = true; // blocking requires acks
+
   var stream = new Duplex({allowHalfOpen:false});
-  var acking = false;
   var queue = [];
   
   // incoming chunked data coming from another stream
@@ -126,9 +132,10 @@ exports.chunking = function(args, cbPacket){
     while(data.length)
     {
       var len = data.readUInt8(0);
-      // packet done
+      // packet done or ack
       if(len === 0)
       {
+        blocked = false;
         if(chunks.length)
         {
           var packet = exports.decode(chunks);
@@ -140,17 +147,18 @@ exports.chunking = function(args, cbPacket){
       }
       // not a full chunk yet, wait for more
       if(data.length < (len+1)) break;
+
       // full chunk, buffer it up
+      blocked = false;
       chunks = Buffer.concat([chunks,data.slice(1,len+1)]);
       data = data.slice(len+1);
-      // send/clear acks per chunk when enabled
+      // ensure a response when enabled
       if(args.ack)
       {
-        acking = false;
         if(!queue.length) queue.push(new Buffer("\0"));
-        stream.send();
       }
     }
+    stream.send(); // always try sending more data
     cbWrite();
   }
 
@@ -161,12 +169,12 @@ exports.chunking = function(args, cbPacket){
     while(packet)
     {
       var len = new Buffer(1);
-      var chunk = packet.slice(0,args.size-1);
+      var chunk = packet.slice(0,space);
       packet = packet.slice(chunk.length);
       len.writeUInt8(chunk.length,0);
       // check if we can include the packet terminating zero
       var zero = new Buffer(0);
-      if(packet.length == 0 && chunk.length < 255)
+      if(packet.length == 0 && chunk.length <= space)
       {
         zero = new Buffer("\0");
         packet = false;
@@ -174,11 +182,12 @@ exports.chunking = function(args, cbPacket){
       queue.push(Buffer.concat([len,chunk,zero]));
     }
 
-    // pull next packet to be chunked off the queue
-    if(queue.length && !acking)
+    // pull next chunk off the queue
+    if(queue.length && !blocked)
     {
-      if(args.ack) acking = true;
-      if(stream.push(queue.shift())) stream.send(); // let the loop figure itself out
+      var chunk = queue.shift();
+      if(args.blocking && chunk.length > 1) blocked = true;
+      if(stream.push(chunk)) stream.send(); // let the loop figure itself out
     }
   }
 

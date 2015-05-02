@@ -150,14 +150,14 @@ describe('hashname', function(){
     stream1.send(bin);
   });
 
-  it('should chunk stream w/ acks', function(done){
+  it('should chunk stream w/ blocking', function(done){
     var bin = lob.encode({foo:true},require('crypto').randomBytes(1000));
-    var stream2 = lob.chunking({ack:"chunk"}, function(err, packet){
+    var stream2 = lob.chunking({block:true}, function(err, packet){
       expect(lob.isPacket(packet)).to.be.true;
       expect(packet.body.length).to.be.equal(1000);
       done();
     });
-    var stream1 = lob.chunking({});
+    var stream1 = lob.chunking({block:true});
     stream1.pipe(stream2);
     stream2.pipe(stream1);
     stream1.send(bin);
