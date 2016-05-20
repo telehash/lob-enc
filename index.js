@@ -238,3 +238,97 @@ exports.decloak = function(cloaked, key, rounds)
   return exports.decloak(chacha20.decrypt(key, cloaked.slice(0,8), cloaked.slice(8)), key, rounds);
 }
 
+// framing stream
+var Duplex = require('stream').Duplex;
+exports.framing = function(args, cbPacket){
+  if(!args) args = {};
+  if(!cbPacket) cbPacket = function(err, packet){ };
+
+  // frames must be 16-128
+  var size = (args.size <= 128 && args.size >= 16)?args.size:32;
+  var space = size - 4;
+  
+  var stream = new Duplex({allowHalfOpen:false});
+  var outbox = [];
+  
+  // incoming framed data coming from another stream
+  var cache = new Buffer(0);
+  var raw = new Buffer(0);
+  stream._write = function(data,enc,cbWrite)
+  {
+    // trigger an error when http is detected, but otherwise continue
+    if(raw.length == 0 && data.slice(0,5).toString() == 'GET /')
+    {
+      cbPacket("HTTP detected",data);
+    }
+    raw = Buffer.concat([raw,data]);
+    while(raw.length > size)
+    {
+      var len = data.readUInt8(0);
+      // packet done or ack
+      if(len === 0)
+      {
+        blocked = false;
+        if(frames.length)
+        {
+          var packet = exports.decode(frames);
+          frames = new Buffer(0);
+          if(packet) cbPacket(false, packet);
+        }
+        data = data.slice(1);
+        continue;
+      }
+      // not a full frame yet, wait for more
+      if(data.length < (len+1)) break;
+
+      // full frame, buffer it up
+      blocked = false;
+      frames = Buffer.concat([frames,data.slice(1,len+1)]);
+      data = data.slice(len+1);
+      // ensure a response when enabled
+      if(args.ack)
+      {
+        if(!queue.length) queue.push(new Buffer("\0"));
+      }
+    }
+    stream.send(); // always try sending more data
+    cbWrite();
+  }
+
+  // accept packets to be frameed
+  stream.send = function(packet)
+  {
+    // break packet into frames and add to queue
+    while(packet)
+    {
+      var len = new Buffer(1);
+      var frame = packet.slice(0,space);
+      packet = packet.slice(frame.length);
+      len.writeUInt8(frame.length,0);
+      // check if we can include the packet terminating zero
+      var zero = new Buffer(0);
+      if(packet.length == 0 && frame.length <= space)
+      {
+        zero = new Buffer("\0");
+        packet = false;
+      }
+      queue.push(Buffer.concat([len,frame,zero]));
+    }
+
+    // pull next frame off the queue
+    if(queue.length && !blocked)
+    {
+      var frame = queue.shift();
+      if(args.blocking && frame.length > 1) blocked = true;
+      if(stream.push(frame)) stream.send(); // let the loop figure itself out
+    }
+  }
+
+  // try sending more frames
+  stream._read = function(size)
+  {
+    stream.send();
+  }
+
+  return stream;
+}
